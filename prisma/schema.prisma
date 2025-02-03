@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator json_server {
+  provider       = "prisma-json-server-generator"
+  outputFileName = "db.json"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./db.json"
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  email          String         @unique
+  name           String
+  role           String         @default("USER")
+  password       String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  messages       Message[]
+  ownesChatRooms ChatRoom[]
+  userChatRooms  UserChatRoom[]
+
+  @@map("users")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int?
+  sender     User?    @relation(fields: [senderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  chatRoomId Int
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  content    String
+  sendAt     DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("messages")
+}
+
+model ChatRoom {
+  id           Int            @id @default(autoincrement())
+  name         String
+  password     String?
+  isGroup      Boolean        @default(true)
+  ownerId      Int
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  message      Message[]
+  userChatRoom UserChatRoom[]
+
+  @@map("chatrooms")
+}
+
+model UserChatRoom {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  chatRoomId Int
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  joinedAt   DateTime @default(now())
+
+  @@unique([userId, chatRoomId])
+  @@map("userchatrooms")
+}
