@@ -9,7 +9,14 @@ export const getMessages = async (
   res: Response,
   next: NextFunction
 ) => {
-  const messages = await prismaClient.message.findMany();
+  const messages = await prismaClient.message.findMany({
+    where:{
+      chatRoomId: +req.params.chatRoomId
+    },
+    include: {
+      sender: true,
+    },
+  });
   res.json(messages);
 };
 
@@ -23,15 +30,15 @@ export const addMessage = async (
   } catch (err: any) {
     if (err instanceof ZodError)
       return next(
-    new HttpException(ErrorCode.INVALID_DATA_400, 400, err.errors)
-  );
-  return next(
-    new HttpException(ErrorCode.GENERAL_EXCEPTION_100, 100, err.message)
-  );
-}
+        new HttpException(ErrorCode.INVALID_DATA_400, 400, err.errors)
+      );
+    return next(
+      new HttpException(ErrorCode.GENERAL_EXCEPTION_100, 100, err.message)
+    );
+  }
 
   try {
-    console.log(req.body)
+    console.log(req.body);
     const newMessage = await prismaClient.message.create({
       data: {
         content: req.body.content,
@@ -40,7 +47,10 @@ export const addMessage = async (
         },
         chatRoom: {
           connect: { id: +req.params.chatRoomId },
-        }
+        },
+      },
+      include: {
+        sender: true, // This includes the sender details in the returned object
       },
     });
     res.json(newMessage);

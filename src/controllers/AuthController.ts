@@ -23,13 +23,12 @@ export const register = async (
   const user = await prismaClient.user.findFirst({ where: { email } });
 
   if (user) return next(new HttpException(ErrorCode.ALREADY_EXIST_403, 403));
-
   const newUser = await prismaClient.user.create({
     data: {
       name,
       email,
       password: hashSync(password, 10),
-      role: role.toUpperCase(),
+      role: "USER",
     },
   });
   res.json(newUser);
@@ -41,10 +40,13 @@ export const login = async (
   next: NextFunction
 ) => {
   const { email, password } = req.body;
+  console.log(req.body);
   const user = await prismaClient.user.findFirst({ where: { email } });
 
-  if (!user) return next(new HttpException(ErrorCode.NOT_FOUND_404, 404));
-
+  if (!user) {
+    console.log("notfound");
+    return next(new HttpException(ErrorCode.NOT_FOUND_404, 404));
+  }
   if (!compareSync(password, user!.password))
     return next(
       new HttpException(
@@ -66,8 +68,13 @@ export const login = async (
   res.json({ user, accessToken });
 };
 
-export const me = async (req: Request, res: Response, next: NextFunction) => {
-  res.json(req.user.name);
+export const me = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  
+  res.json(req.user);
 };
 
 export const logout = async (
@@ -78,7 +85,7 @@ export const logout = async (
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",
+    sameSite: "lax",
   });
   res.json(req.user.name);
 };

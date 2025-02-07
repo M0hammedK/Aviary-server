@@ -8,10 +8,16 @@ export const AuthMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization;
+  let token = req.headers.authorization;
   if (!token) {
     return next(new HttpException(ErrorCode.UNAUTHORIZED_ACCESS_401, 401));
   }
+  
+  // Remove the "Bearer " prefix if it exists
+  if (token.startsWith("Bearer ")) {
+    token = token.slice(7);
+  }
+
   try {
     const payload = verifyAccessToken(token);
 

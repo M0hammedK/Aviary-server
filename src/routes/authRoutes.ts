@@ -8,6 +8,6 @@ const authRoutes = Router();
 authRoutes.post("/signup", ErrorHandler(register));
 authRoutes.post("/login", ErrorHandler(login));
 authRoutes.get("/me", [AuthMiddleware], ErrorHandler(me));
-authRoutes.post("/logout", [AuthMiddleware], ErrorHandler(logout));
+authRoutes.get("/logout", [AuthMiddleware], ErrorHandler(logout));
 
 export default authRoutes;

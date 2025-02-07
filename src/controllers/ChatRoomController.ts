@@ -10,7 +10,11 @@ export const getChatRooms = async (
   res: Response,
   next: NextFunction
 ) => {
-  const chatRooms = await prismaClient.chatRoom.findMany();
+  const chatRooms = await prismaClient.chatRoom.findMany({
+    include: {
+      owner: true,
+    },
+  });
   res.json(chatRooms);
 };
 
@@ -53,6 +57,17 @@ export const createChatRoom = async (
       isGroup: true,
     },
   });
+  const newUserChatRoom = await prismaClient.userChatRoom.create({
+    data: {
+      user: {
+        connect: { id: Number(req.user.id) },
+      },
+      chatRoom: {
+        connect: { id: newChatRoom.id },
+      },
+    },
+  });
+
   res.json(newChatRoom);
 };
 
