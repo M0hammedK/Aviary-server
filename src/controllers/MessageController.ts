@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../../server";
 import { ZodError } from "zod";
+import { User } from "@prisma/client";
 import { ErrorCode, HttpException } from "../exception/root";
 import { MessageSchema } from "../schema/message";
 
@@ -10,8 +11,8 @@ export const getMessages = async (
   next: NextFunction
 ) => {
   const messages = await prismaClient.message.findMany({
-    where:{
-      chatRoomId: +req.params.chatRoomId
+    where: {
+      chatRoomId: +req.params.chatRoomId,
     },
     include: {
       sender: true,
@@ -43,7 +44,7 @@ export const addMessage = async (
       data: {
         content: req.body.content,
         sender: {
-          connect: { id: Number(req.user.id) },
+          connect: { id: Number((req as Request & { user: User }).user.id) },
         },
         chatRoom: {
           connect: { id: +req.params.chatRoomId },

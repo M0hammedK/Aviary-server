@@ -1,17 +1,18 @@
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ErrorCode, HttpException } from "../exception/root";
 import { prismaClient } from "../../server";
+import { User } from "@prisma/client";
 
 export const UserChatRoomMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user.role === "ADMIN") return next();
+  if ((req as Request & { user: User }).user.role === "ADMIN") return next();
   try {
     const userChatRoom = await prismaClient.userChatRoom.findFirstOrThrow({
       where: {
-        userId: Number(req.user.id),
+        userId: Number((req as Request & { user: User }).user.id),
         chatRoomId: Number(req.params.chatRoomId),
       },
     });

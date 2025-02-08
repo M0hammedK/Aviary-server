@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorCode, HttpException } from "../exception/root";
+import { User } from "@prisma/client";
 
 export const AdminMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user.role !== "ADMIN")
+  if ((req as Request & { user: User }).user.role !== "ADMIN")
     return next(new HttpException(ErrorCode.UNAUTHORIZED_ACCESS_401, 401));
 
   return next();

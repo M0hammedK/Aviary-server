@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ErrorCode, HttpException } from "../exception/root";
 import { prismaClient } from "../../server";
 import { verifyAccessToken } from "../utils/tokenUtils";
+import { User } from "@prisma/client";
 
 export const AuthMiddleware = async (
   req: Request,
@@ -12,7 +13,7 @@ export const AuthMiddleware = async (
   if (!token) {
     return next(new HttpException(ErrorCode.UNAUTHORIZED_ACCESS_401, 401));
   }
-  
+
   // Remove the "Bearer " prefix if it exists
   if (token.startsWith("Bearer ")) {
     token = token.slice(7);
@@ -27,7 +28,7 @@ export const AuthMiddleware = async (
     if (!user)
       return next(new HttpException(ErrorCode.UNAUTHORIZED_ACCESS_401, 401));
 
-    (req.user as any) = user;
+    ((req as Request & { user: User }).user as any) = user;
     return next();
   } catch (err: any) {
     let exception;

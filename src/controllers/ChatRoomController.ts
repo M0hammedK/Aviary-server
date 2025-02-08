@@ -3,6 +3,7 @@ import { prismaClient } from "../../server";
 import { ChatRoomSchema } from "../schema/chatRoom";
 import { ZodError } from "zod";
 import { ErrorCode, HttpException } from "../exception/root";
+import { User } from "@prisma/client";
 import { hashSync } from "bcrypt";
 
 export const getChatRooms = async (
@@ -48,11 +49,11 @@ export const createChatRoom = async (
     );
   }
   if (req.body.password) req.body.password = hashSync(req.body.password, 10);
-    const newChatRoom = await prismaClient.chatRoom.create({
+  const newChatRoom = await prismaClient.chatRoom.create({
     data: {
       ...req.body,
       owner: {
-        connect: { id: req.user.id },
+        connect: { id: (req as Request & { user: User }).user.id },
       },
       isGroup: true,
     },
@@ -60,7 +61,7 @@ export const createChatRoom = async (
   const newUserChatRoom = await prismaClient.userChatRoom.create({
     data: {
       user: {
-        connect: { id: Number(req.user.id) },
+        connect: { id: Number((req as Request & { user: User }).user.id) },
       },
       chatRoom: {
         connect: { id: newChatRoom.id },

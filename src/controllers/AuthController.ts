@@ -3,6 +3,7 @@ import { UserSchema } from "../schema/users";
 import { prismaClient } from "../../server";
 import { ErrorCode, HttpException } from "../exception/root";
 import { ZodError } from "zod";
+import { User } from "@prisma/client";
 import { hashSync, compareSync } from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokenUtils";
 
@@ -68,13 +69,8 @@ export const login = async (
   res.json({ user, accessToken });
 };
 
-export const me = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  
-  res.json(req.user);
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+  res.json((req as Request & { user: User }).user);
 };
 
 export const logout = async (
@@ -87,5 +83,5 @@ export const logout = async (
     secure: true,
     sameSite: "lax",
   });
-  res.json(req.user.name);
+  res.json((req as Request & { user: User }).user.name);
 };

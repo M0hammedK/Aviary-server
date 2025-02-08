@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../../server";
 import { ZodError } from "zod";
 import { ErrorCode, HttpException } from "../exception/root";
+import { User } from "@prisma/client";
 import { compareSync } from "bcrypt";
 
 export const getUsersChatRoom = async (
@@ -42,7 +43,7 @@ export const addUserChatRoom = async (
     const newUserChatRoom = await prismaClient.userChatRoom.create({
       data: {
         user: {
-          connect: { id: Number(req.user.id) },
+          connect: { id: Number((req as Request & { user: User }).user.id) },
         },
         chatRoom: {
           connect: { id: chatRoom.id },

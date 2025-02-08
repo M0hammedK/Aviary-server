@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../../server";
+import { User } from "@prisma/client";
 import { ErrorCode, HttpException } from "../exception/root";
 
 export const OwnerMessageMiddleware = async (
@@ -7,12 +8,16 @@ export const OwnerMessageMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.user.role === "ADMIN") return next();
+  if ((req as Request & { user: User }).user.role === "ADMIN") return next();
   try {
     const messageOwner = await prismaClient.message.findFirstOrThrow({
       where: { senderId: +req.params.userId },
     });
-    if (messageOwner.senderId === Number(req.user.id)) return next();
+    if (
+      messageOwner.senderId ===
+      Number((req as Request & { user: User }).user.id)
+    )
+      return next();
 
     return next(new HttpException(ErrorCode.UNAUTHORIZED_ACCESS_401, 401));
   } catch (err) {
