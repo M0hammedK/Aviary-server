@@ -12,7 +12,7 @@ const app: Express = express();
 const port = process.env.PORT || 4000;
 
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_PATH, credentials: true }));
+app.use(cors({ origin: 'https://aviary-alpha.vercel.app', credentials: true }));
 app.use(cookieParser());
 
 app.use("/api", rootRouter);
